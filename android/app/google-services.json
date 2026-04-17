@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "424737386450",
+    "project_id": "insta-clone-c2096",
+    "storage_bucket": "insta-clone-c2096.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:424737386450:android:bd9c2703f96d3961f8620b",
+        "android_client_info": {
+          "package_name": "com.example.sample"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOchllnCXn16Hi9w3LvGOuucj55YuA86Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
