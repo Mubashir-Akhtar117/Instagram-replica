@@ -50,6 +50,7 @@ dependencies:
   flutter_native_splash: ^2.4.7
   flutter_launcher_icons: ^0.13.1
   get_it: ^9.2.1
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:

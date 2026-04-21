@@ -1,27 +1,35 @@
 import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:sample/core/error/failure.dart';
 import 'package:sample/features/home/domain/entities/post_entity.dart';
 import 'package:sample/features/home/model/comment_model.dart';
 
 abstract class PostRepository {
-  Future<List<PostEntity>> getPosts();
 
-  Future<String> uploadImage(File file);
+  Future<Either<Failure, List<PostEntity>>> getPosts();
 
-  Future<void> createPost(
+  Future<Either<Failure, String>> uploadImage(File file);
+
+  Future<Either<Failure, void>> createPost(
     File file,
     String caption,
     MediaType mediaType,
   );
 
-  Future<void> addComment(
+  Future<Either<Failure, void>> addComment(
     String postId,
     String comment,
     String userId,
   );
 
-  Future<List<CommentModel>> getComments(String postId);
+  Future<Either<Failure, List<CommentModel>>> getComments(
+    String postId,
+  );
 
   Stream<List<CommentModel>> getCommentsStream(String postId);
 
-  Future<void> toggleLike(String postId, String userId);
+  Future<Either<Failure, void>> toggleLike(
+    String postId,
+    String userId,
+  );
 }

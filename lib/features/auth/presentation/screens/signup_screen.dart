@@ -20,7 +20,8 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -33,22 +34,23 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
-  void _onSignup() {
-    final blocState = context.read<SignupBloc>().state;
-
+  void _handleSignup() {
     if (!_formKey.currentState!.validate()) return;
 
-    if (blocState.profileImage == null) {
+    final bloc = context.read<SignupBloc>();
+    final state = bloc.state;
+
+    if (state.profileImage == null) {
       AppSnackBar.error(context, "Please select a profile picture");
       return;
     }
 
-    context.read<SignupBloc>().add(
+    bloc.add(
       SignupRequested(
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-        profileImage: blocState.profileImage!,
+        profileImage: state.profileImage!,
       ),
     );
   }
@@ -85,6 +87,7 @@ class _SignupScreenState extends State<SignupScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 20),
+
                 Text(
                   'Instagram',
                   textAlign: TextAlign.center,
@@ -94,10 +97,11 @@ class _SignupScreenState extends State<SignupScreen> {
                     letterSpacing: 1.2,
                   ),
                 ),
+
                 const SizedBox(height: 40),
+
                 BlocBuilder<SignupBloc, SignupState>(
-                  buildWhen: (previous, current) =>
-                      previous.profileImage != current.profileImage,
+                  buildWhen: (p, c) => p.profileImage != c.profileImage,
                   builder: (context, state) {
                     return ProfileImagePicker(
                       image: state.profileImage,
@@ -111,7 +115,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     );
                   },
                 ),
+
                 const SizedBox(height: 24),
+
                 Form(
                   key: _formKey,
                   child: Column(
@@ -136,9 +142,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         validator: Validators.password,
                       ),
                       const SizedBox(height: 24),
+
                       BlocBuilder<SignupBloc, SignupState>(
-                        buildWhen: (previous, current) =>
-                            previous.status != current.status,
+                        buildWhen: (p, c) => p.status != c.status,
                         builder: (context, state) {
                           if (state.status == SignupStatus.loading) {
                             return CircularProgressIndicator(
@@ -148,19 +154,18 @@ class _SignupScreenState extends State<SignupScreen> {
 
                           return AuthButton(
                             text: "Sign Up",
-                            onTap: _onSignup,
+                            onTap: _handleSignup,
                             backgroundColor: theme.primaryColor,
-                            textColor:
-                                theme.elevatedButtonTheme.style?.foregroundColor
-                                    ?.resolve({}) ??
-                                AppColors.buttonText,
+                            textColor: AppColors.buttonText,
                           );
                         },
                       ),
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 20),
+
                 AuthBottomSection(
                   onForgotPassword: () {},
                   onFacebookLogin: () {},

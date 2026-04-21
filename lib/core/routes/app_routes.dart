@@ -20,16 +20,12 @@ import 'package:sample/features/home/presentation/screens/create_story_screen.da
 import 'app_routes_name.dart';
 
 class AppRouter {
-  static PostBloc? _postBloc;
-  static StoryBloc? _storyBloc;
-  static ProfileBloc? _profileBloc;
-
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case AppRoutesName.signin:
         return MaterialPageRoute(
           builder: (_) => BlocProvider(
-            create: (_) => SigninBloc(),
+            create: (_) => sl<SigninBloc>(),
             child: const SigninScreen(),
           ),
         );
@@ -43,20 +39,18 @@ class AppRouter {
         );
 
       case AppRoutesName.home:
-        _postBloc ??= sl<PostBloc>()
-          ..add(LoadPosts())
-          ..startPostsListener();
-
-        _storyBloc ??= sl<StoryBloc>()..add(LoadStoriesEvent());
-
-        _profileBloc ??= sl<ProfileBloc>();
-
         return MaterialPageRoute(
           builder: (_) => MultiBlocProvider(
             providers: [
-              BlocProvider.value(value: _postBloc!),
-              BlocProvider.value(value: _storyBloc!),
-              BlocProvider.value(value: _profileBloc!),
+              BlocProvider(
+                create: (_) => sl<PostBloc>()
+                  ..add(LoadPosts())
+                  ..startPostsListener(),
+              ),
+              BlocProvider(
+                create: (_) => sl<StoryBloc>()..add(LoadStoriesEvent()),
+              ),
+              BlocProvider(create: (_) => sl<ProfileBloc>()),
             ],
             child: const HomeScreen(),
           ),
@@ -64,16 +58,16 @@ class AppRouter {
 
       case AppRoutesName.createPost:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: _postBloc!,
+          builder: (_) => BlocProvider(
+            create: (_) => sl<PostBloc>(),
             child: const CreatePostScreen(),
           ),
         );
 
       case AppRoutesName.createStory:
         return MaterialPageRoute(
-          builder: (_) => BlocProvider.value(
-            value: _storyBloc!,
+          builder: (_) => BlocProvider(
+            create: (_) => sl<StoryBloc>(),
             child: const CreateStoryScreen(),
           ),
         );

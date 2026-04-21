@@ -28,15 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen>
 
     _tabController = TabController(length: 4, vsync: this);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ProfileBloc>().add(LoadMyProfileEvent());
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    context.read<ProfileBloc>().add(LoadMyProfileEvent());
   }
 
   @override
@@ -44,24 +36,25 @@ class _ProfileScreenState extends State<ProfileScreen>
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            TopBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                child: BlocBuilder<ProfileBloc, ProfileState>(
-                  builder: (context, state) {
-                    if (state.status == ProfileStatus.loading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
+        child: BlocBuilder<ProfileBloc, ProfileState>(
+          builder: (context, state) {
+            if (state.status == ProfileStatus.loading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-                    final user = state.user;
+            final user = state.user;
 
-                    if (user == null) {
-                      return const Center(child: Text("No Data"));
-                    }
+            if (user == null) {
+              return const Center(child: Text("No Data"));
+            }
 
-                    return Column(
+            return Column(
+              children: [
+                TopBar(user: user),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ProfileHeader(user: user),
@@ -69,12 +62,12 @@ class _ProfileScreenState extends State<ProfileScreen>
                         ActionButtons(),
                         TabSection(controller: _tabController),
                       ],
-                    );
-                  },
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );

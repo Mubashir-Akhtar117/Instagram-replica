@@ -1,8 +1,12 @@
- 
 import 'package:flutter/material.dart';
 import 'package:sample/core/theme/app_colors.dart';
+import 'package:sample/features/auth/donain/entities/user.dart';
 
 class TopBar extends StatelessWidget {
+  final UserEntity user;
+
+  const TopBar({super.key, required this.user});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -12,21 +16,31 @@ class TopBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.lock_outline,
-                  color: AppColors.textPrimary, size: 16),
+              const Icon(
+                Icons.lock_outline,
+                color: AppColors.textPrimary,
+                size: 16,
+              ),
               const SizedBox(width: 4),
-              const Text(
-                'shaikhh_mu...',
-                style: TextStyle(
+
+              Text(
+                user.name,
+                style: const TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),
               ),
+
               const SizedBox(width: 4),
-              const Icon(Icons.keyboard_arrow_down,
-                  color: AppColors.textPrimary, size: 18),
+              const Icon(
+                Icons.keyboard_arrow_down,
+                color: AppColors.textPrimary,
+                size: 18,
+              ),
+
               const SizedBox(width: 4),
+
               Container(
                 width: 8,
                 height: 8,
@@ -37,37 +51,22 @@ class TopBar extends StatelessWidget {
               ),
             ],
           ),
+
           Row(
-            children: [
-              const Icon(Icons.grid_view_rounded,
-                  color: AppColors.textPrimary, size: 24),
-              const SizedBox(width: 16),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Icon(Icons.notifications_none_rounded,
-                      color: AppColors.textPrimary, size: 26),
-                  Positioned(
-                    top: -4,
-                    right: -6,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: const Text('9+',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                ],
+            children: const [
+              Icon(
+                Icons.grid_view_rounded,
+                color: AppColors.textPrimary,
+                size: 24,
               ),
-              const SizedBox(width: 16),
-              const Icon(Icons.menu, color: AppColors.textPrimary, size: 24),
+              SizedBox(width: 16),
+              Icon(
+                Icons.notifications_none_rounded,
+                color: AppColors.textPrimary,
+                size: 26,
+              ),
+              SizedBox(width: 16),
+              Icon(Icons.menu, color: AppColors.textPrimary, size: 24),
             ],
           ),
         ],
@@ -75,4 +74,3 @@ class TopBar extends StatelessWidget {
     );
   }
 }
- 

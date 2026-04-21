@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:sample/features/home/domain/usecase/MarkStorySeenUseCase.dart';
 
 import '../../domain/usecase/create_story_usecase.dart';
 import '../../domain/usecase/get_stories_usecase.dart';
@@ -11,12 +12,14 @@ import 'upload_story_events.dart';
 class StoryBloc extends Bloc<StoryEvent, StoryState> {
   final CreateStoryUseCase createStoryUseCase;
   final GetStoriesUseCase getStoriesUseCase;
-
+  final MarkStorySeenUseCase markStorySeenUseCase;
   final ImagePicker _picker = ImagePicker();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  StoryBloc(this.createStoryUseCase, this.getStoriesUseCase)
-      : super(const StoryState()) {
+  StoryBloc(
+    this.createStoryUseCase,
+    this.getStoriesUseCase,
+    this.markStorySeenUseCase,
+  ) : super(const StoryState()) {
     on<LoadStoriesEvent>(_loadStories);
     on<UploadStoryEvent>(_uploadStory);
     on<PickStoryEvent>(_pickFromGallery);
@@ -30,7 +33,7 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
     PickStoryEvent event,
     Emitter<StoryState> emit,
   ) async {
-    final picked = await _picker.pickMedia(); 
+    final picked = await _picker.pickMedia();
 
     if (picked != null) {
       emit(state.copyWith(file: File(picked.path)));
@@ -52,8 +55,16 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
     LoadStoriesEvent event,
     Emitter<StoryState> emit,
   ) async {
-    final stories = await getStoriesUseCase.fetchFresh();
-    emit(state.copyWith(stories: stories));
+    final result = await getStoriesUseCase.fetchFresh();
+
+    result.fold(
+      (failure) {
+        emit(state.copyWith(loading: false, error: failure.message));
+      },
+      (stories) {
+        emit(state.copyWith(stories: stories, loading: false, error: null));
+      },
+    );
   }
 
   Future<void> _uploadStory(
@@ -68,15 +79,22 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
     try {
       await createStoryUseCase(file);
 
-      final freshStories = await getStoriesUseCase.fetchFresh();
+      final freshResult = await getStoriesUseCase.fetchFresh();
 
-      emit(
-        state.copyWith(
-          uploading: false,
-          uploadSuccess: true,
-          clearFile: true,
-          stories: freshStories,
-        ),
+      freshResult.fold(
+        (failure) {
+          emit(state.copyWith(uploading: false, error: failure.message));
+        },
+        (stories) {
+          emit(
+            state.copyWith(
+            uploading: false,
+              uploadSuccess: true,
+              clearFile: true,
+              stories: stories,
+            ),
+          );
+        },
       );
     } catch (e) {
       emit(state.copyWith(uploading: false, error: e.toString()));
@@ -87,21 +105,25 @@ class StoryBloc extends Bloc<StoryEvent, StoryState> {
     MarkStorySeenEvent event,
     Emitter<StoryState> emit,
   ) async {
-    await _firestore.collection('stories').doc(event.storyId).update({
-      'viewedBy': FieldValue.arrayUnion([event.userId]),
-    });
+    try {
+      await markStorySeenUseCase(event.storyId, event.userId);
 
-    final updated = state.stories.map((story) {
-      if (story.id == event.storyId) {
-        final list = List<String>.from(story.viewedBy);
-        if (!list.contains(event.userId)) {
-          list.add(event.userId);
+      final updated = state.stories.map((story) {
+        if (story.id == event.storyId) {
+          final list = List<String>.from(story.viewedBy);
+
+          if (!list.contains(event.userId)) {
+            list.add(event.userId);
+          }
+
+          return story.copyWith(viewedBy: list);
         }
-        return story.copyWith(viewedBy: list);
-      }
-      return story;
-    }).toList();
+        return story;
+      }).toList();
 
-    emit(state.copyWith(stories: updated));
+      emit(state.copyWith(stories: updated));
+    } catch (e) {
+      emit(state.copyWith(error: e.toString()));
+    }
   }
 }

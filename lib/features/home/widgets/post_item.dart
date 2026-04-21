@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:sample/core/utils/time_formatter.dart';
 import 'package:sample/features/home/domain/entities/post_entity.dart';
+import 'package:sample/features/home/presentation/bloc/profile_bloc.dart';
+import 'package:sample/features/home/presentation/bloc/profile_state.dart';
 import 'package:sample/features/home/widgets/post_action.dart';
 import 'package:sample/features/home/widgets/video_post_widget.dart';
 
@@ -14,8 +18,6 @@ class PostItem extends StatefulWidget {
 }
 
 class _PostItemState extends State<PostItem> {
-  bool isLiked = false;
-
   Widget _buildMedia() {
     if (widget.post.mediaType == MediaType.video) {
       return _VideoContainer(url: widget.post.mediaUrl);
@@ -26,44 +28,48 @@ class _PostItemState extends State<PostItem> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ListTile(
-          leading: CircleAvatar(
-            backgroundColor: Colors.grey.shade300,
-            backgroundImage: widget.post.mediaUrl.isNotEmpty
-                ? NetworkImage(widget.post.mediaUrl)
-                : null,
-          ),
-          title: Text(widget.post.username),
-        ),
+    return BlocBuilder<ProfileBloc, ProfileState>(
+      builder: (context, state) {
+        final user = state.user;
 
-        _buildMedia(),
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.grey.shade300,
+                backgroundImage: NetworkImage(user?.profileUrl ?? ""),
+              ),
+              title: Text(user?.name ?? ""),
+            ),
 
-        PostActions(post: widget.post),
+            _buildMedia(),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text("${widget.post.username} ${widget.post.caption}"),
-        ),
+            PostActions(post: widget.post),
 
-        const SizedBox(height: 4),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text("${user?.name ?? ""} ${widget.post.caption}"),
+            ),
 
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 12),
-          child: Text("View all comments"),
-        ),
+            const SizedBox(height: 4),
 
-        const SizedBox(height: 4),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text("View all comments"),
+            ),
 
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Text(TimeFormatter.format(widget.post.time)),
-        ),
+            const SizedBox(height: 4),
 
-        const SizedBox(height: 16),
-      ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(TimeFormatter.format(widget.post.time)),
+            ),
+
+            const SizedBox(height: 16),
+          ],
+        );
+      },
     );
   }
 }
@@ -77,7 +83,7 @@ class _ImageContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return AspectRatio(
       aspectRatio: 1,
-      child: Image.network(url, width: double.infinity, fit: BoxFit.cover),
+      child: Image.network(url, fit: BoxFit.cover),
     );
   }
 }
@@ -92,7 +98,6 @@ class _VideoContainer extends StatelessWidget {
     return AspectRatio(
       aspectRatio: 1,
       child: Container(
-        width: double.infinity,
         color: Colors.black,
         child: VideoPostWidget(url: url),
       ),

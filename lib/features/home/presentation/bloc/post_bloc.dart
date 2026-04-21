@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -54,11 +53,18 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   Future<void> _onLoadPosts(LoadPosts event, Emitter<PostState> emit) async {
     emit(state.copyWith(loading: true));
 
-    final posts = await getPostsUseCase();
+    final result = await getPostsUseCase();
 
     if (isClosed) return;
 
-    emit(state.copyWith(loading: false, posts: posts));
+    result.fold(
+      (failure) {
+        emit(state.copyWith(loading: false, error: failure.message));
+      },
+      (posts) {
+        emit(state.copyWith(loading: false, posts: posts, error: null));
+      },
+    );
   }
 
   Future<void> _onPickMedia(
@@ -105,9 +111,9 @@ class PostBloc extends Bloc<PostEvent, PostState> {
   ) async {
     if (state.selectedFile == null) return;
 
-    emit(state.copyWith(uploading: true, uploadSuccess: false));
+    emit(state.copyWith(uploading: true, uploadSuccess: false, error: null));
 
-    await createPostUseCase(
+    final result = await createPostUseCase(
       state.selectedFile!,
       state.caption,
       state.mediaType,
@@ -115,35 +121,62 @@ class PostBloc extends Bloc<PostEvent, PostState> {
 
     if (isClosed) return;
 
-    emit(
-      state.copyWith(
-        uploading: false,
-        selectedFile: null,
-        caption: "",
-        uploadSuccess: true,
-      ),
+    await result.fold(
+      (failure) async {
+        emit(
+          state.copyWith(
+            uploading: false,
+            uploadSuccess: false,
+            error: failure.message,
+          ),
+        );
+      },
+      (_) async {
+        emit(
+          state.copyWith(
+            uploading: false,
+            selectedFile: null,
+            caption: "",
+            uploadSuccess: true,
+          ),
+        );
+
+        final postsResult = await repository.getPosts();
+
+        if (isClosed) return;
+
+        postsResult.fold(
+          (failure) {
+            emit(state.copyWith(error: failure.message));
+          },
+          (posts) {
+            emit(state.copyWith(posts: posts));
+          },
+        );
+
+        add(ClearMediaEvent());
+      },
     );
-
-    final freshPosts = await repository.getPosts();
-
-    if (isClosed) return;
-
-    emit(state.copyWith(posts: freshPosts));
-
-    add(ClearMediaEvent());
   }
 
   Future<void> _onRefreshPosts(
     RefreshPostsEvent event,
     Emitter<PostState> emit,
   ) async {
-    emit(state.copyWith(loading: true));
+    emit(state.copyWith(loading: true, error: null));
 
-    final posts = await getPostsUseCase();
+    final result = await getPostsUseCase();
 
     if (isClosed) return;
 
-    emit(state.copyWith(loading: false, posts: posts));
+    result.fold(
+      (failure) {
+        emit(state.copyWith(loading: false, error: failure.message));
+      },
+      (posts) {
+        emit(state.copyWith(loading: false, posts: posts, error: null));
+      },
+    );
   }
 
   void _onCaptionChanged(CaptionChangedEvent event, Emitter<PostState> emit) {

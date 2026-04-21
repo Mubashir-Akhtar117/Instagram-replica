@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:sample/core/error/failure.dart';
 import 'package:sample/features/home/data/dataSource/post_remote_datasource.dart';
 import 'package:sample/features/home/domain/entities/post_entity.dart';
 import 'package:sample/features/home/domain/repository/post_repository.dart';
@@ -10,8 +12,13 @@ class PostRepositoryImpl implements PostRepository {
   PostRepositoryImpl(this.remote);
 
   @override
-  Future<List<PostEntity>> getPosts() {
-    return remote.getPosts();
+  Future<Either<Failure, List<PostEntity>>> getPosts() async {
+    try {
+      final result = await remote.getPosts();
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
@@ -20,27 +27,57 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Future<void> createPost(
+  Future<Either<Failure, void>> createPost(
     File file,
     String caption,
     MediaType mediaType,
   ) async {
-    await remote.createPost(file: file, caption: caption, mediaType: mediaType);
+    try {
+      await remote.createPost(
+        file: file,
+        caption: caption,
+        mediaType: mediaType,
+      );
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
-  Future<String> uploadImage(File file) {
-    return remote.uploadMedia(file, 'image');
+  Future<Either<Failure, String>> uploadImage(File file) async {
+    try {
+      final url = await remote.uploadMedia(file, 'image');
+      return Right(url);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
-  Future<void> addComment(String postId, String comment, String userId) {
-    return remote.addComment(postId: postId, comment: comment, userId: userId);
+  Future<Either<Failure, void>> addComment(
+    String postId,
+    String comment,
+    String userId,
+  ) async {
+    try {
+      await remote.addComment(postId: postId, comment: comment, userId: userId);
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
-  Future<List<CommentModel>> getComments(String postId) {
-    return remote.getComments(postId);
+  Future<Either<Failure, List<CommentModel>>> getComments(String postId) async {
+    try {
+      final result = await remote.getComments(postId);
+      return Right(result);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   @override
@@ -49,7 +86,12 @@ class PostRepositoryImpl implements PostRepository {
   }
 
   @override
-  Future<void> toggleLike(String postId, String userId) {
-    return remote.toggleLike(postId, userId);
+  Future<Either<Failure, void>> toggleLike(String postId, String userId) async {
+    try {
+      await remote.toggleLike(postId, userId);
+      return const Right(null);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 }

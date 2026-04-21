@@ -2,10 +2,13 @@ import 'package:get_it/get_it.dart';
 
 import 'package:sample/features/auth/data/dataSource/auth_remote_datasource_impl.dart';
 import 'package:sample/features/auth/data/repositories/auth_repository_imp.dart';
+import 'package:sample/features/auth/donain/usecase/signin_usecase.dart';
 import 'package:sample/features/auth/donain/usecase/signup_usecase.dart';
+import 'package:sample/features/auth/presentation/bloc/signin_bloc.dart';
 
 import 'package:sample/features/home/data/dataSource/post_remote_datasource.dart';
 import 'package:sample/features/home/data/dataSource/post_repository_impl.dart';
+import 'package:sample/features/home/domain/usecase/MarkStorySeenUseCase.dart';
 import 'package:sample/features/home/domain/usecase/get_posts_usecase.dart';
 import 'package:sample/features/home/domain/usecase/create_post_usecase.dart';
 
@@ -27,68 +30,91 @@ import 'package:sample/features/auth/presentation/bloc/signup_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> setupLocator() async {
-  // ---------------- AUTH ----------------
   sl.registerLazySingleton<AuthRemoteDataSourceImpl>(
-      () => AuthRemoteDataSourceImpl());
+    () => AuthRemoteDataSourceImpl(),
+  );
 
   sl.registerLazySingleton<AuthRepositoryImpl>(
-      () => AuthRepositoryImpl(sl<AuthRemoteDataSourceImpl>()));
+    () => AuthRepositoryImpl(sl<AuthRemoteDataSourceImpl>()),
+  );
 
   sl.registerLazySingleton<SignupUseCase>(
-      () => SignupUseCase(sl<AuthRepositoryImpl>()));
+    () => SignupUseCase(sl<AuthRepositoryImpl>()),
+  );
 
   sl.registerFactory<SignupBloc>(() => SignupBloc(sl<SignupUseCase>()));
+  sl.registerLazySingleton<SigninUseCase>(
+    () => SigninUseCase(sl<AuthRepositoryImpl>()),
+  );
 
-  // ---------------- POST ----------------
-  sl.registerLazySingleton<PostRemoteDataSource>(
-      () => PostRemoteDataSource());
+  sl.registerFactory<SigninBloc>(() => SigninBloc(sl<SigninUseCase>()));
+
+  sl.registerLazySingleton<PostRemoteDataSource>(() => PostRemoteDataSource());
 
   sl.registerLazySingleton<PostRepositoryImpl>(
-      () => PostRepositoryImpl(sl<PostRemoteDataSource>()));
+    () => PostRepositoryImpl(sl<PostRemoteDataSource>()),
+  );
 
   sl.registerLazySingleton<GetPostsUseCase>(
-      () => GetPostsUseCase(sl<PostRepositoryImpl>()));
+    () => GetPostsUseCase(sl<PostRepositoryImpl>()),
+  );
 
   sl.registerLazySingleton<CreatePostUseCase>(
-      () => CreatePostUseCase(sl<PostRepositoryImpl>()));
+    () => CreatePostUseCase(sl<PostRepositoryImpl>()),
+  );
 
-  sl.registerFactory<PostBloc>(() => PostBloc(
-        sl<GetPostsUseCase>(),
-        sl<CreatePostUseCase>(),
-        sl<PostRepositoryImpl>(),
-      ));
+  sl.registerFactory<PostBloc>(
+    () => PostBloc(
+      sl<GetPostsUseCase>(),
+      sl<CreatePostUseCase>(),
+      sl<PostRepositoryImpl>(),
+    ),
+  );
 
-  // ---------------- STORY ----------------
   sl.registerLazySingleton<StoryRemoteDataSource>(
-      () => StoryRemoteDataSource());
+    () => StoryRemoteDataSource(),
+  );
 
-  sl.registerLazySingleton<StoryLocalDataSource>(
-      () => StoryLocalDataSource());
+  sl.registerLazySingleton<StoryLocalDataSource>(() => StoryLocalDataSource());
 
-  sl.registerLazySingleton<StoryRepositoryImpl>(() =>
-      StoryRepositoryImpl(sl<StoryRemoteDataSource>(), sl<StoryLocalDataSource>()));
+  sl.registerLazySingleton<StoryRepositoryImpl>(
+    () => StoryRepositoryImpl(
+      sl<StoryRemoteDataSource>(),
+      sl<StoryLocalDataSource>(),
+    ),
+  );
 
   sl.registerLazySingleton<CreateStoryUseCase>(
-      () => CreateStoryUseCase(sl<StoryRepositoryImpl>()));
+    () => CreateStoryUseCase(sl<StoryRepositoryImpl>()),
+  );
 
   sl.registerLazySingleton<GetStoriesUseCase>(
-      () => GetStoriesUseCase(sl<StoryRepositoryImpl>()));
+    () => GetStoriesUseCase(sl<StoryRepositoryImpl>()),
+  );
+  sl.registerLazySingleton<MarkStorySeenUseCase>(
+    () => MarkStorySeenUseCase(sl<StoryRepositoryImpl>()),
+  );
+  sl.registerFactory<StoryBloc>(
+    () => StoryBloc(
+      sl<CreateStoryUseCase>(),
+      sl<GetStoriesUseCase>(),
+      sl<MarkStorySeenUseCase>(),
+    ),
+  );
 
-  sl.registerFactory<StoryBloc>(() => StoryBloc(
-        sl<CreateStoryUseCase>(),
-        sl<GetStoriesUseCase>(),
-      ));
-
-  // ---------------- PROFILE ----------------
   sl.registerLazySingleton<UserRemoteDataSourceImpl>(
-      () => UserRemoteDataSourceImpl());
+    () => UserRemoteDataSourceImpl(),
+  );
 
   sl.registerLazySingleton<UserRepositoryImpl>(
-      () => UserRepositoryImpl(sl<UserRemoteDataSourceImpl>()));
+    () => UserRepositoryImpl(sl<UserRemoteDataSourceImpl>()),
+  );
 
   sl.registerLazySingleton<GetUserProfileUseCase>(
-      () => GetUserProfileUseCase(sl<UserRepositoryImpl>()));
+    () => GetUserProfileUseCase(sl<UserRepositoryImpl>()),
+  );
 
   sl.registerFactory<ProfileBloc>(
-      () => ProfileBloc(sl<GetUserProfileUseCase>()));
+    () => ProfileBloc(sl<GetUserProfileUseCase>()),
+  );
 }

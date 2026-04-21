@@ -7,6 +7,7 @@ class StoryState {
   final bool uploading;
   final bool uploadSuccess;
   final String? error;
+  final bool loading;
 
   const StoryState({
     this.stories = const [],
@@ -14,6 +15,7 @@ class StoryState {
     this.uploading = false,
     this.uploadSuccess = false,
     this.error,
+    this.loading = false,
   });
 
   StoryState copyWith({
@@ -23,6 +25,7 @@ class StoryState {
     bool? uploading,
     bool? uploadSuccess,
     String? error,
+    bool? loading,
   }) {
     return StoryState(
       stories: stories ?? this.stories,
@@ -30,6 +33,7 @@ class StoryState {
       uploading: uploading ?? this.uploading,
       uploadSuccess: uploadSuccess ?? this.uploadSuccess,
       error: error,
+      loading: loading ?? this.loading,
     );
   }
 }

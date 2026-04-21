@@ -9,27 +9,32 @@ class SignupBloc extends Bloc<SignupEvent, SignupState> {
   final SignupUseCase signupUseCase;
 
   SignupBloc(this.signupUseCase) : super(const SignupState()) {
-    on<ProfileImageChanged>((event, emit) {
-      emit(state.copyWith(profileImage: event.profileImage));
-    });
+    on<ProfileImageChanged>(_onProfileImageChanged);
+    on<SignupRequested>(_onSignupRequested);
+  }
 
-    on<SignupRequested>((event, emit) async {
-      emit(state.copyWith(status: SignupStatus.loading));
+  void _onProfileImageChanged(
+    ProfileImageChanged event,
+    Emitter<SignupState> emit,
+  ) {
+    emit(state.copyWith(profileImage: event.profileImage));
+  }
 
-      try {
-        await signupUseCase.call(
-          SignupParams(
-            name: event.name,
-            email: event.email,
-            password: event.password,
-            profileImage: event.profileImage,
-          ),
-        );
+  Future<void> _onSignupRequested(
+    SignupRequested event,
+    Emitter<SignupState> emit,
+  ) async {
+    emit(state.copyWith(status: SignupStatus.loading));
 
-        emit(state.copyWith(status: SignupStatus.success));
-      } catch (e) {
-        emit(state.copyWith(status: SignupStatus.failure, error: e.toString()));
-      }
-    });
+    await signupUseCase.call(
+      SignupParams(
+        name: event.name,
+        email: event.email,
+        password: event.password,
+        profileImage: event.profileImage,
+      ),
+    );
+
+    emit(state.copyWith(status: SignupStatus.success));
   }
 }

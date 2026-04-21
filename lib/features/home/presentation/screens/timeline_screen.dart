@@ -7,6 +7,8 @@ import 'package:sample/core/routes/app_routes_name.dart';
 import 'package:sample/features/home/presentation/bloc/post_bloc.dart';
 import 'package:sample/features/home/presentation/bloc/post_event.dart';
 import 'package:sample/features/home/presentation/bloc/post_state.dart';
+import 'package:sample/features/home/presentation/bloc/profile_bloc.dart';
+import 'package:sample/features/home/presentation/bloc/profile_event.dart';
 import 'package:sample/features/home/presentation/bloc/story_bloc.dart';
 import 'package:sample/features/home/presentation/bloc/upload_story_events.dart';
 
@@ -69,7 +71,6 @@ class _TimelineScreenState extends State<TimelineScreen> {
           Expanded(
             child: BlocBuilder<PostBloc, PostState>(
               builder: (context, state) {
-                // 🔥 SHOW LOADER ONLY FIRST TIME
                 if (state.loading && state.posts.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }

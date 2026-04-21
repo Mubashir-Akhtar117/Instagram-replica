@@ -10,7 +10,6 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print("userssssss${user.email}");
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(

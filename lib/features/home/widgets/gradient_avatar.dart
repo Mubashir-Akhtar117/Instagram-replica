@@ -7,8 +7,6 @@ class GradientAvatar extends StatelessWidget {
   const GradientAvatar({super.key, required this.imageUrl});
   @override
   Widget build(BuildContext context) {
-    print("profile-------->$imageUrl");
-
     return Stack(
       clipBehavior: Clip.none,
       children: [

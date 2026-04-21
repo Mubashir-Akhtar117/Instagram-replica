@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:dartz/dartz.dart';
+import 'package:sample/core/error/failure.dart';
 
 import '../../domain/repository/story_repository.dart';
 import '../../model/story_model.dart';
@@ -14,32 +16,45 @@ class StoryRepositoryImpl implements StoryRepository {
   bool _syncing = false;
 
   @override
-  Future<void> createStory(File file) async {
-    await remote.createStory(file);
-    _syncInBackground();
-  }
-
-  @override
-  Future<List<StoryModel>> getStories() async {
-    final cached = await local.getStories();
-
-    _syncInBackground();
-
-    if (cached.isNotEmpty) {
-      return cached;
+  Future<Either<Failure, void>> createStory(File file) async {
+    try {
+      await remote.createStory(file);
+      _syncInBackground();
+      return const Right(null);
+    } catch (e) {
+      return Left(Failure(e.toString()));
     }
-
-    final fresh = await _fetchRemote();
-    await local.saveStories(fresh);
-
-    return fresh;
   }
 
   @override
-  Future<List<StoryModel>> fetchFreshStories() async {
-    final fresh = await _fetchRemote();
-    await local.saveStories(fresh);
-    return fresh;
+  Future<Either<Failure, List<StoryModel>>> getStories() async {
+    try {
+      final cached = await local.getStories();
+
+      _syncInBackground();
+
+      if (cached.isNotEmpty) {
+        return Right(cached);
+      }
+
+      final fresh = await _fetchRemote();
+      await local.saveStories(fresh);
+
+      return Right(fresh);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, List<StoryModel>>> fetchFreshStories() async {
+    try {
+      final fresh = await _fetchRemote();
+      await local.saveStories(fresh);
+      return Right(fresh);
+    } catch (e) {
+      return Left(Failure(e.toString()));
+    }
   }
 
   Future<List<StoryModel>> _fetchRemote() async {
@@ -57,6 +72,22 @@ class StoryRepositoryImpl implements StoryRepository {
     } catch (_) {
     } finally {
       _syncing = false;
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> markStorySeen(
+    String storyId,
+    String userId,
+  ) async {
+    try {
+      await remote.markStorySeen(storyId, userId);
+
+      _syncInBackground();
+
+      return const Right(null);
+    } catch (e) {
+      return Left(Failure(e.toString()));
     }
   }
 }

@@ -9,6 +9,7 @@ class PostState {
   final bool uploading;
   final bool uploadSuccess;
   final MediaType mediaType; 
+  final String? error;
 
   PostState({
     required this.posts,
@@ -18,6 +19,7 @@ class PostState {
     required this.uploading,
     required this.uploadSuccess,
     required this.mediaType,
+    this.error
   });
 
   factory PostState.initial() {
@@ -29,6 +31,7 @@ class PostState {
       uploading: false,
       uploadSuccess: false,
       mediaType: MediaType.image, 
+       error: null,
     );
   }
 
@@ -40,6 +43,7 @@ class PostState {
     bool? uploading,
     bool? uploadSuccess,
     MediaType? mediaType,
+     String? error
   }) {
     return PostState(
       posts: posts ?? this.posts,
@@ -49,6 +53,7 @@ class PostState {
       uploading: uploading ?? this.uploading,
       uploadSuccess: uploadSuccess ?? this.uploadSuccess,
       mediaType: mediaType ?? this.mediaType, 
+        error: error,
     );
   }
 }

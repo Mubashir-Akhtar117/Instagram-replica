@@ -43,4 +43,10 @@ class StoryRemoteDataSource {
 
     return snap.docs.map((e) => {'id': e.id, ...e.data()}).toList();
   }
+
+  Future<void> markStorySeen(String storyId, String userId) async {
+    await firestore.collection('stories').doc(storyId).update({
+      'viewedBy': FieldValue.arrayUnion([userId]),
+    });
+  }
 }
